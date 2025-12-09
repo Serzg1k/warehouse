@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreOrderRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        // For demo we allow everyone to create orders
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'sku' => ['required', 'string', 'max:255'],
+            'qty' => ['required', 'integer', 'min:1'],
+        ];
+    }
+}

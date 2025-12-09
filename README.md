@@ -1,59 +1,128 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Warehouse Reservation — Test Task (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A simplified event-driven warehouse reservation system built with Laravel.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Docker + Docker Desktop
+- Git
+- Composer (only to install dependencies; host PHP version is not important if you use `--ignore-platform-reqs`)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Project Setup
 
-## Learning Laravel
+### 1. Clone the repository
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+1. Clone the repo:
+    - `git clone git@github.com:Serzg1k/warehouse.git warehouse-reservation`
+2. Go to the project directory:
+    - `cd warehouse-reservation`
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 2. Environment setup
 
-## Laravel Sponsors
+1. Copy env file:
+    - `cp .env.example .env`
+2. Generate app key:
+    - `php artisan key:generate`  
+      If host PHP is too old, you can later run inside Sail:  
+      `./vendor/bin/sail artisan key:generate`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 3. Install dependencies
 
-### Premium Partners
+Install PHP dependencies via Composer:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- `composer install --ignore-platform-reqs`
 
-## Contributing
+### 4. Install and configure Sail
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Install Sail:
+    - `composer require laravel/sail --dev`
+2. Run Sail installation wizard:
+    - `php artisan sail:install`
 
-## Code of Conduct
+### 5. Start containers
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Start Docker containers via Sail:
 
-## Security Vulnerabilities
+- `./vendor/bin/sail up -d`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 6. Run migrations and seeders
 
-## License
+Apply database migrations and seed demo data:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `./vendor/bin/sail artisan migrate:fresh --seed`
+
+Seeders will create demo inventory records for test SKUs (for example `ABC123` and `XYZ999`).
+
+### 7. Run queue worker
+
+For events and jobs to be processed, start the queue worker in a separate terminal:
+
+- `cd warehouse-reservation`
+- `./vendor/bin/sail artisan queue:work`
+
+---
+
+## How to Use
+
+
+### Basic API usage
+
+Create order:
+
+- `curl -X POST http://localhost/api/order -H "Content-Type: application/json" -d '{"sku":"ABC123","qty":3}'`
+
+Get order:
+
+- `curl http://localhost/api/orders/1`
+
+Get inventory movements:
+
+- `curl http://localhost/api/inventory/ABC123/movements`
+
+---
+
+## Run Tests
+
+Run the test suite with:
+
+- `./vendor/bin/sail artisan test`
+## What I would improve in a production version (що б ви покращили у продакшн-версії)
+
+1. **Authentication & authorization**
+    - Protect all API endpoints (e.g. Laravel Sanctum / Passport, role-based access for internal tools).
+    - Rate limiting per client / API key to avoid abuse.
+
+2. **Rate limiting & quotas**
+    - Per-client throttling on our API (Laravel throttle middleware).
+    - Global and per-order limits for calls to the supplier API to respect their rate limits and protect us from cascading failures.
+
+3. **Idempotency & robustness**
+    - Idempotent handling of `OrderCreated` and background jobs (e.g. by using idempotency keys or strict status transitions).
+    - Protection against double-reservation in case of job retries.
+    - Explicit dead-letter queue / failure handling for jobs.
+
+4. **Supplier integration**
+    - Replace random responses with a real HTTP integration and configurable retry/backoff policy (exponential backoff instead of fixed 15s).
+    - Timeouts, circuit breaker pattern, structured logging of all supplier calls.
+    - Configurable maximum waiting time for `awaiting_restock` per order.
+
+5. **Monitoring & observability**
+    - Centralized logging (e.g. ELK / Loki) for events, jobs and supplier interactions.
+    - Metrics and dashboards (success/fail rate of reservations, latency, number of delayed orders).
+    - Alerts on abnormal failure rates or long `awaiting_restock` queues.
+
+6. **Data model & performance**
+    - Proper indexing (by `sku`, `status`, `created_at`) for orders and movements.
+    - Pagination for listing endpoints (`/api/orders`, `/api/inventory/{sku}/movements`).
+    - Archival strategy for old movements (cold storage / separate table).
+
+7. **Validation & safety**
+    - Stronger validation and business rules (reasonable bounds on `qty`, allowed SKU formats).
+    - Configurable limits per client (max qty per order, max concurrent pending orders).
+
+8. **API design**
+    - Versioned API (`/api/v1/...`).
+    - More detailed error payloads and domain-specific error codes.
+    - Webhooks or event stream (e.g. when order status changes) instead of pure polling.
