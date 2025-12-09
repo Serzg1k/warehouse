@@ -88,7 +88,7 @@ Get inventory movements:
 Run the test suite with:
 
 - `./vendor/bin/sail artisan test`
-## What I would improve in a production version (що б ви покращили у продакшн-версії)
+## What I would improve in a production version
 
 1. **Authentication & authorization**
     - Protect all API endpoints (e.g. Laravel Sanctum / Passport, role-based access for internal tools).
