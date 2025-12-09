@@ -15,7 +15,7 @@ A simplified event-driven warehouse reservation system built with Laravel.
 ### 1. Clone the repository
 
 1. Clone the repo:
-    - `git clone git@github.com:Serzg1k/warehouse.git warehouse-reservation`
+    - `git clone git@github.com:Serzg1k/warehouse.git`
 2. Go to the project directory:
     - `cd warehouse-reservation`
 
